@@ -1,3 +1,5 @@
+"""simple test script for disease-symptom matching"""
+
 import sys
 from pathlib import Path
 import logging
@@ -15,15 +17,15 @@ def main() -> None:
     try:
         matches = data_loader.find_diseases_by_symptoms(user_symptoms, min_hits=1, top_k=5)
         if matches:
-            logging.info(f"Znalezione dopasowania dla objawów {user_symptoms}:")
+            logging.info(f"found matches for symptoms {user_symptoms}:")
             for match in matches:
                 logging.info(f"- {match['disease']} (score: {match['score']})")
         else:
-            logging.info("Brak dopasowań")
+            logging.info("no matches found")
     except FileNotFoundError as e:
         logging.error(e)
     except Exception as e:
-        logging.error(f"Nieoczekiwany błąd: {e}")
+        logging.error(f"unexpected error: {e}")
 
 if __name__ == "__main__":
     main()

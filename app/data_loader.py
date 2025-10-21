@@ -1,4 +1,4 @@
-"""wczytywanie danych i wyszukiwanie chorób po objawach"""
+"""loading data and searching diseases by symptoms"""
 from pathlib import Path
 import pandas as pd
 import logging
@@ -11,11 +11,11 @@ class DataLoader:
 
     def load_matrix(self) -> tuple[pd.DataFrame, list[str]]:
         if not self.data_source.exists():
-            raise FileNotFoundError(f"Brak pliku {self.data_source}.")
+            raise FileNotFoundError(f"file not found: {self.data_source}")
         df = pd.read_csv(self.data_source)
         df.columns = [c.strip().lower() for c in df.columns]
         if "diseases" not in df.columns:
-            raise ValueError("Brak kolumny 'diseases'.")
+            raise ValueError("missing 'diseases' column")
         symptom_cols = [c for c in df.columns if c != "diseases"]
         return df, symptom_cols
 
@@ -45,5 +45,5 @@ class DataLoader:
             if len(results) >= top_k:
                 break
 
-        logging.info(f"Dopasowano {len(results)} chorób dla objawów: {user_symptoms}")
+        logging.info(f"matched {len(results)} diseases for symptoms: {user_symptoms}")
         return results
