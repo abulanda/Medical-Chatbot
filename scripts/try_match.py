@@ -12,20 +12,25 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 def main() -> None:
     data_loader = DataLoader(Path("data/symptom_matrix.csv"))
-    user_symptoms = ["fever", "cough", "headache"]
+    examples = [
+        ["fever", "cough"],
+        ["feever", "head ache"],
+        ["fever", "no cough", "fatigue"]
+    ]
 
-    try:
-        matches = data_loader.find_diseases_by_symptoms(user_symptoms, min_hits=1, top_k=5)
-        if matches:
-            logging.info(f"found matches for symptoms {user_symptoms}:")
-            for match in matches:
-                logging.info(f"- {match['disease']} (score: {match['score']})")
-        else:
-            logging.info("no matches found")
-    except FileNotFoundError as e:
-        logging.error(e)
-    except Exception as e:
-        logging.error(f"unexpected error: {e}")
+    for user_symptoms in examples:
+        logging.info(f"--- testing: {user_symptoms} ---")
+        try:
+            matches = data_loader.find_diseases_by_symptoms(user_symptoms, min_hits=1.0, top_k=5)
+            if matches:
+                for match in matches:
+                    logging.info(f"- {match['disease']} (score: {match['score']}, matched: {match['matched_symptoms']})")
+            else:
+                logging.info("no matches found")
+        except FileNotFoundError as e:
+            logging.error(e)
+        except Exception as e:
+            logging.error(f"unexpected error: {e}")
 
 if __name__ == "__main__":
     main()
