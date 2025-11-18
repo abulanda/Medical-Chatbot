@@ -5,11 +5,14 @@ import pandas as pd
 import logging
 import kagglehub
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 DATASET = "dhivyeshrk/diseases-and-symptoms-dataset"
 OUT_DIR = Path("data")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def find_matrix_csv(dataset_dir: Path) -> Path:
     candidates = list(dataset_dir.glob("*.csv"))
@@ -27,6 +30,7 @@ def find_matrix_csv(dataset_dir: Path) -> Path:
             continue
     raise RuntimeError("no suitable CSV file found")
 
+
 def main() -> None:
     logging.info("starting Kaggle dataset download")
     dataset_path = Path(kagglehub.dataset_download(DATASET))
@@ -42,6 +46,7 @@ def main() -> None:
     out_file = OUT_DIR / "symptom_matrix.csv"
     df.to_csv(out_file, index=False)
     logging.info(f"saved processed file to: {out_file.resolve()}")
+
 
 if __name__ == "__main__":
     main()

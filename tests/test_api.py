@@ -7,13 +7,23 @@ from app.data_loader import DataLoader
 
 client = TestClient(main.app)
 
+
 def _write_small_matrix(path: Path):
-    df = pd.DataFrame([
-        {"diseases": "Flu", "fever": 1, "cough": 1, "headache": 1, "fatigue": 1},
-        {"diseases": "Cold", "fever": 0, "cough": 1, "headache": 1, "fatigue": 0},
-        {"diseases": "Migraine", "fever": 0, "cough": 0, "headache": 1, "fatigue": 0},
-    ])
+    df = pd.DataFrame(
+        [
+            {"diseases": "Flu", "fever": 1, "cough": 1, "headache": 1, "fatigue": 1},
+            {"diseases": "Cold", "fever": 0, "cough": 1, "headache": 1, "fatigue": 0},
+            {
+                "diseases": "Migraine",
+                "fever": 0,
+                "cough": 0,
+                "headache": 1,
+                "fatigue": 0,
+            },
+        ]
+    )
     df.to_csv(path, index=False)
+
 
 def test_get_test_endpoint(tmp_path):
     csv = tmp_path / "symptom_matrix.csv"
@@ -25,6 +35,7 @@ def test_get_test_endpoint(tmp_path):
     j = r.json()
     assert j["status"] == "OK"
     assert j["diseases_count"] == 3
+
 
 def test_post_find_diseases_basic(tmp_path):
     csv = tmp_path / "symptom_matrix.csv"

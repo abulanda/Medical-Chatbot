@@ -1,4 +1,5 @@
 """loading data and searching diseases by symptoms"""
+
 from pathlib import Path
 import pandas as pd
 import logging
@@ -7,12 +8,17 @@ from typing import Optional
 
 try:
     from rapidfuzz import process as rf_process
+
     _HAS_RAPIDFUZZ = True
 except Exception:
     from difflib import get_close_matches
+
     _HAS_RAPIDFUZZ = False
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 class DataLoader:
     def __init__(self, data_source: Path):
@@ -31,12 +37,16 @@ class DataLoader:
             idx[self._normalize_text(c)] = c
         return idx
 
-    def _fuzzy_match(self, token: str, candidates: list[str], cutoff: float = 0.7) -> Optional[str]:
+    def _fuzzy_match(
+        self, token: str, candidates: list[str], cutoff: float = 0.7
+    ) -> Optional[str]:
         """match token to candidates (candidates are normalized strings)"""
         if not token:
             return None
         if _HAS_RAPIDFUZZ:
-            match = rf_process.extractOne(token, candidates, score_cutoff=int(cutoff * 100))
+            match = rf_process.extractOne(
+                token, candidates, score_cutoff=int(cutoff * 100)
+            )
             return match[0] if match else None
         else:
             matches = get_close_matches(token, candidates, n=1, cutoff=cutoff)
@@ -51,14 +61,14 @@ class DataLoader:
             raise ValueError("missing 'diseases' column")
         symptom_cols = [c for c in df.columns if c != "diseases"]
         return df, symptom_cols
-    
+
     def find_diseases_by_symptoms(
         self,
         user_symptoms: list[str],
         min_hits: float = 1.0,
         top_k: int = 5,
         symptom_weights: Optional[dict[str, float]] = None,
-        fuzzy_cutoff: float = 0.65
+        fuzzy_cutoff: float = 0.65,
     ) -> list[dict]:
         """
         Simple rule-based matcher:
@@ -88,11 +98,20 @@ class DataLoader:
             if clean in col_index:
                 mapped_norm = clean
             else:
-                mapped_norm = self._fuzzy_match(clean, normalized_cols, cutoff=fuzzy_cutoff)
+                mapped_norm = self._fuzzy_match(
+                    clean, normalized_cols, cutoff=fuzzy_cutoff
+                )
 
             if mapped_norm:
                 mapped_col = col_index[mapped_norm]
-                parsed.append({"input": raw, "col": mapped_col, "negated": negated, "norm": mapped_norm})
+                parsed.append(
+                    {
+                        "input": raw,
+                        "col": mapped_col,
+                        "negated": negated,
+                        "norm": mapped_norm,
+                    }
+                )
             else:
                 unmatched.append(raw)
 
@@ -127,7 +146,9 @@ class DataLoader:
         df_scores = df[["diseases"]].copy()
         df_scores["score"] = score_series
 
-        filtered = df_scores[df_scores["score"] >= float(min_hits)].sort_values("score", ascending=False)
+        filtered = df_scores[df_scores["score"] >= float(min_hits)].sort_values(
+            "score", ascending=False
+        )
         if filtered.empty:
             logging.info("no diseases passed the min_hits threshold")
             return []
@@ -149,11 +170,13 @@ class DataLoader:
                 else:
                     if val == 1:
                         matched.append(c)
-            results.append({
-                "disease": disease,
-                "score": float(row["score"]),
-                "matched_symptoms": matched
-            })
+            results.append(
+                {
+                    "disease": disease,
+                    "score": float(row["score"]),
+                    "matched_symptoms": matched,
+                }
+            )
             if len(results) >= top_k:
                 break
 
